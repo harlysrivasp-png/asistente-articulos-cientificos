@@ -13,7 +13,60 @@ import os
 import json
 from datetime import datetime
 
+# =====================================================
+# LOGIN DE ACCESO
+# =====================================================
 
+def login():
+    """
+    Login básico para proteger el acceso a la aplicación.
+    Los usuarios y contraseñas se configuran en Streamlit Secrets.
+    """
+
+    if "autenticado" not in st.session_state:
+        st.session_state.autenticado = False
+
+    if "usuario_actual" not in st.session_state:
+        st.session_state.usuario_actual = ""
+
+    if st.session_state.autenticado:
+        with st.sidebar:
+            st.success(f"Usuario: {st.session_state.usuario_actual}")
+
+            if st.button("Cerrar sesión"):
+                st.session_state.autenticado = False
+                st.session_state.usuario_actual = ""
+                st.rerun()
+
+        return True
+
+    st.title("🔐 Acceso restringido")
+
+    st.info("Ingrese sus credenciales para acceder al Asistente Científico.")
+
+    usuario = st.text_input("Usuario")
+
+    clave = st.text_input("Contraseña", type="password")
+
+    if st.button("Ingresar"):
+        try:
+            usuarios = st.secrets["usuarios"]
+
+            if usuario in usuarios and clave == usuarios[usuario]:
+                st.session_state.autenticado = True
+                st.session_state.usuario_actual = usuario
+                st.success("Acceso concedido.")
+                st.rerun()
+            else:
+                st.error("Usuario o contraseña incorrectos.")
+
+        except Exception:
+            st.error(
+                "No se encontraron usuarios configurados. "
+                "Revise la sección Secrets de Streamlit Cloud."
+            )
+
+    st.stop()
 # =====================================================
 # CONFIGURACION GENERAL
 # =====================================================
@@ -22,7 +75,7 @@ st.set_page_config(
     page_title="Asistente Cientifico de Articulos",
     layout="wide"
 )
-
+login()
 st.title("📚 Asistente Científico para Elaboración de Artículos Académicos")
 
 st.info(
